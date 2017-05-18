@@ -1,0 +1,223 @@
+﻿{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"databaseAccountName": {
+			"type": "string",
+			"metadata": {
+				"description": "The DocumentDB database account name."
+			}
+		},
+		"appSvcPlanName": {
+			"type": "string",
+			"metadata": {
+				"description": "The name of the App Service Plan that will host the Web App."
+			}
+		},
+		"svcPlanType": {
+			"type": "string",
+			"defaultValue": "F1 (Free)",
+			"allowedValues": [
+				"F1 (Free)",
+				"D1 (Shared)",
+				"B1 (Basic)",
+				"B2 (Basic)",
+				"B3 (Basic)",
+				"S1 (Standard)",
+				"S2 (Standard)",
+				"S3 (Standard)",
+				"P1 (Premium)",
+				"P2 (Premium)",
+				"P3 (Premium)",
+				"P4 (Premium)"
+			],
+			"metadata": {
+				"description": "The type and instance size of the App Service Plan."
+			}
+		},
+		"webAppName": {
+			"type": "string",
+			"metadata": {
+				"description": "The name of the Web App."
+			}
+		},
+		"zkitTenantId": {
+			"type": "string",
+			"metadata": {
+				"description": "The ID of your tenant (10 chars long)"
+			}
+		},
+		"zkitAdminKey": {
+			"type": "string",
+			"metadata": {
+				"description": "One of the admin keys of your tenant (32 char long hex string)"
+			}
+		},
+		"zkitApiVersion": {
+			"type": "string",
+			"allowedValues": [
+				"3",
+				"4"
+			],
+			"metadata": {
+				"description": "API / SDK version to use"
+			}
+		},
+		"zkitIdpWebClientId": {
+			"type": "string",
+			"metadata": {
+				"description": "Id of the configured ZeroKit IDP web client"
+			}
+		},
+		"zkitIdpWebClientSecret": {
+			"type": "string",
+			"metadata": {
+				"description": "Secret of the configured ZeroKit IDP web client"
+			}
+		},
+		"zkitIdpSdkClientId": {
+			"type": "string",
+			"metadata": {
+				"description": "Id of the configured ZeroKit IDP SDK client"
+			}
+		},
+		"zkitIdpSdkClientSecret": {
+			"type": "string",
+			"metadata": {
+				"description": "Secret of the configured ZeroKit IDP SDK client"
+			}
+		}
+	},
+	"variables": {
+		"databaseAccountTier": "Standard",
+		"nodeVersion": "7.7.4",
+		"packageUri": "https://github.com/tresorit/ZeroKit-Azure-backend-sample/blob/master/.package//ZkaasNodejsSample.zip", // Package URL from repo
+		"zkitIdpSdkClientRedirectUrl": "[concat('https://', parameters('zkitIdpSdkClientId'), '.', parameters('zkitTenantId'), '.api.tresorit.io/')]",
+		"svcPlanSize": "[substring(parameters('svcPlanType'), 0, 2)]"
+	},
+	"resources": [
+		{
+			"apiVersion": "2015-04-08",
+			"type": "Microsoft.DocumentDB/databaseAccounts",
+			"name": "[parameters('databaseAccountName')]",
+			"location": "[resourceGroup().location]",
+			"kind": "MongoDB",
+			"properties": {
+				"name": "[parameters('databaseAccountName')]",
+				"databaseAccountOfferType": "[variables('databaseAccountTier')]",
+				"locations": [
+					{
+						"locationName": "[resourceGroup().location]",
+						"failoverPriority": 0
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Web/serverfarms",
+			"apiVersion": "2015-08-01",
+			"name": "[parameters('appSvcPlanName')]",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "[variables('svcPlanSize')]",
+				"capacity": 1
+			},
+			"properties": {}
+		},
+		{
+			"type": "Microsoft.Web/sites",
+			"apiVersion": "2015-08-01",
+			"name": "[parameters('webAppName')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat('Microsoft.Web/serverFarms/', parameters('appSvcPlanName'))]"
+			],
+			"properties": {
+				"name": "[parameters('webAppName')]",
+				"serverFarmId": "[parameters('appSvcPlanName')]",
+				"siteConfig": {
+					"phpVersion": "off",
+					"appSettings": [
+						{
+							"Name": "WEBSITE_NODE_DEFAULT_VERSION",
+							"Value": "[variables('nodeVersion')]"
+						},
+						{
+							"Name": "DOCUMENTDB_ENDPOINT",
+							"Value": "[reference(concat('Microsoft.DocumentDb/databaseAccounts/', parameters('databaseAccountName'))).documentEndpoint]"
+						},
+						{
+							"Name": "DOCUMENTDB_PRIMARY_KEY",
+							"Value": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('databaseAccountName')), '2015-04-08').primaryMasterKey]"
+						},
+						{
+							"name": "ZKIT_DB_URL",
+							"Value": "[concat('mongodb://', parameters('databaseAccountName'), ':', listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('databaseAccountName')), '2015-04-08').primaryMasterKey, '@', parameters('databaseAccountName'), '.documents.azure.com:10250/?ssl=true')]"
+						},
+						{
+							"name": "ZKIT_BASE_URL",
+							"Value": "[concat('https://', parameters('webAppName'), '.azurewebsites.net')]"
+						},
+						{
+							"name": "ZKIT_TENANT_ID",
+							"Value": "[parameters('zkitTenantId')]"
+						},
+						{
+							"name": "ZKIT_ADMIN_KEY",
+							"Value": "[parameters('zkitAdminkey')]"
+						},
+						{
+							"name": "ZKIT_SDK_VERSION",
+							"Value": "[parameters('zkitApiVersion')]"
+						},
+						{
+							"name": "ZKIT_CODE_CLIENT_ID",
+							"Value": "[parameters('zkitIdpWebClientId')]"
+						},
+						{
+							"name": "ZKIT_CODE_CLIENT_SECRET",
+							"Value": "[parameters('zkitIdpWebClientSecret')]"
+						},
+						{
+							"name": "ZKIT_HYBRID_CLIENT_ID",
+							"Value": "[parameters('zkitIdpSdkClientId')]"
+						},
+						{
+							"name": "ZKIT_HYBRID_CLIENT_SECRET",
+							"Value": "[parameters('zkitIdpSdkClientSecret')]"
+						},
+						{
+							"name": "ZKIT_HYBRID_REDIR_URL",
+							"Value": "[variables('zkitIdpSdkClientRedirectUrl')]"
+						},
+						{
+							"name": "ZKIT_CONFIG_FILE",
+							"Value": "./config.env.js"
+						}
+					]
+				}
+			},
+			"resources": [
+				{
+					"name": "MSDeploy",
+					"type": "extensions",
+					"location": "[resourceGroup().location]",
+					"apiVersion": "2015-08-01",
+					"dependsOn": [
+						"[resourceId('Microsoft.Web/sites', parameters('webAppName'))]"
+					],
+					"tags": {
+						"displayName": "MSDeploy"
+					},
+					"properties": {
+						"packageUri": "[variables('packageUri')]",
+						"dbType": "None",
+						"setParameters": {
+							"IIS Web Application Name": "[parameters('webAppName')]"
+						}
+					}
+				}
+			]
+		}
+	]
+}

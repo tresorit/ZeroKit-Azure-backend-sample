@@ -1,0 +1,39 @@
+﻿{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"databaseAccountName": {
+			"value": "GEN-UNIQUE"
+		},
+		"appSvcPlanName": {
+			"value": "GEN-UNIQUE"
+		},
+		"svcPlanType": {
+			"value": "F1 (Free)"
+		},
+		"webAppName": {
+			"value": "GEN-UNIQUE"
+		},
+		"zkitTenantId": {
+			"value": ""
+		},
+		"zkitAdminKey": {
+			"value": ""
+		},
+		"zkitApiVersion": {
+			"value": "4"
+		},
+		"zkitIdpWebClientId": {
+			"value": ""
+		},
+		"zkitIdpWebClientSecret": {
+			"value": ""
+		},
+		"zkitIdpSdkClientId": {
+			"value": ""
+		},
+		"zkitIdpSdkClientSecret": {
+			"value": ""
+		}
+	}
+}

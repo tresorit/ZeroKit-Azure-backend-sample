@@ -1,0 +1,7 @@
+﻿{
+	"itemDisplayName": "ZeroKit Sample server",
+	"description": "This template deploys a ZeroKit Sample server into your azure account. The created resources will include an Azure DocumentDB (MongoDB kind) and an App service web application.",
+	"summary": "This template deploys a ZeroKit Sample server into your azure account.",
+	"githubUsername": "hami89",
+	"dateUpdated": "2017-04-03"
+}

@@ -286,3 +286,8 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+# Package folder
+/.package/*.cmd
+/.package/*.txt
+/.package/*.xml

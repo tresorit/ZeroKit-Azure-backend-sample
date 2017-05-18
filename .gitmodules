@@ -1,0 +1,8 @@
+[submodule "app"]
+	path = app
+	url = https://github.com/tresorit/ZeroKit-NodeJs-backend-sample.git
+	branch = master
+[submodule "ZeroKitNodejsSample/app"]
+	path = ZeroKitNodejsSample/app
+	url = https://github.com/tresorit/ZeroKit-NodeJs-backend-sample.git
+	branch = master
