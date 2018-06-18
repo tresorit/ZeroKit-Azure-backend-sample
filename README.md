@@ -1,3 +1,6 @@
+**Notice:** This project is discontinued and no longer maintained nor supported by Tresorit. This repository only exists for archival purposes.
+***
+
 # ZeroKit-Azure-backend-sample
 This is a wrapper project around our [nodejs sample backend project](https://github.com/tresorit/ZeroKit-NodeJs-backend-sample) to make the deployment procedure into Azure cloud easier.
 
